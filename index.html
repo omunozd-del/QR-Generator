@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de QR</title>
+    <!-- Cargamos la librería para generar el QR -->
+    <script src="https://cloudflare.com"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; background-color: #f4f4f9; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        input { padding: 10px; width: 250px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        #qrcode { margin: 20px 0; display: flex; justify-content: center; }
+        #downloadBtn { background-color: #28a745; display: none; margin-top: 10px; }
+        #downloadBtn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Generador de QR</h2>
+    <input type="text" id="urlInput" placeholder="Pega tu URL aquí (ej: https://google.com)">
+    <br>
+    <button onclick="generarQR()">Generar Código</button>
+    
+    <div id="qrcode"></div>
+    
+    <button id="downloadBtn" onclick="descargarQR()">Descargar Imagen</button>
+</div>
+
+<script>
+    let qrcodeContainer = document.getElementById("qrcode");
+    let qr = null;
+
+    function generarQR() {
+        let url = document.getElementById("urlInput").value;
+        if (!url) {
+            alert("Por favor, ingresa una URL");
+            return;
+        }
+
+        // Limpiar QR anterior si existe
+        qrcodeContainer.innerHTML = "";
+        
+        // Crear el QR
+        qr = new QRCode(qrcodeContainer, {
+            text: url,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        // Mostrar botón de descarga después de un breve delay para que se renderice el canvas
+        setTimeout(() => {
+            document.getElementById("downloadBtn").style.display = "inline-block";
+        }, 300);
+    }
+
+    function descargarQR() {
+        // Obtenemos la imagen generada por la librería (suele ser un <img> o un <canvas>)
+        let img = qrcodeContainer.querySelector("img");
+        let canvas = qrcodeContainer.querySelector("canvas");
+
+        // Si la librería usó canvas, lo convertimos a imagen
+        let src = img ? img.src : canvas.toDataURL("image/png");
+
+        let link = document.createElement("a");
+        link.href = src;
+        link.download = "mi_codigo_qr.png";
+        link.click();
+    }
+</script>
+
+</body>
+</html>
