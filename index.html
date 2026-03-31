@@ -3,49 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de QR</title>
-    <!-- Cargamos la librería para generar el QR -->
+    <title>Generador de QR - GitHub Pages</title>
+    
+    <!-- Cargamos la librería oficial de QRCode.js desde un CDN fiable -->
     <script src="https://cloudflare.com"></script>
+
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; background-color: #f4f4f9; }
-        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        input { padding: 10px; width: 250px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
-        button { padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; transition: 0.3s; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 20px; 
+            background-color: #f0f2f5; 
+            margin: 0;
+        }
+        .container { 
+            background: white; 
+            padding: 2.5rem; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            text-align: center; 
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 { color: #333; margin-bottom: 20px; }
+        input { 
+            padding: 12px; 
+            width: 90%; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: #007bff; }
+        button { 
+            padding: 12px 25px; 
+            cursor: pointer; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold;
+            font-size: 16px;
+            transition: 0.3s; 
+            width: 100%;
+            margin-bottom: 10px;
+        }
         button:hover { background-color: #0056b3; }
-        #qrcode { margin: 20px 0; display: flex; justify-content: center; }
-        #downloadBtn { background-color: #28a745; display: none; margin-top: 10px; }
+        #qrcode { 
+            margin: 25px 0; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 200px;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #downloadBtn { 
+            background-color: #28a745; 
+            display: none; 
+        }
         #downloadBtn:hover { background-color: #218838; }
+        
+        /* Ajuste para que el QR sea responsivo */
+        #qrcode img { margin: 0 auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Generador de QR</h2>
-    <input type="text" id="urlInput" placeholder="Pega tu URL aquí (ej: https://google.com)">
-    <br>
+    <input type="text" id="urlInput" placeholder="Pega tu enlace aquí...">
     <button onclick="generarQR()">Generar Código</button>
     
     <div id="qrcode"></div>
     
-    <button id="downloadBtn" onclick="descargarQR()">Descargar Imagen</button>
+    <button id="downloadBtn" onclick="descargarQR()">Descargar Imagen PNG</button>
 </div>
 
 <script>
-    let qrcodeContainer = document.getElementById("qrcode");
-    let qr = null;
+    const qrcodeContainer = document.getElementById("qrcode");
+    const downloadBtn = document.getElementById("downloadBtn");
 
     function generarQR() {
-        let url = document.getElementById("urlInput").value;
+        const url = document.getElementById("urlInput").value.trim();
+        
         if (!url) {
-            alert("Por favor, ingresa una URL");
+            alert("Por favor, introduce un texto o URL válida.");
             return;
         }
 
-        // Limpiar QR anterior si existe
+        // Limpiar el contenedor antes de generar uno nuevo
         qrcodeContainer.innerHTML = "";
+        downloadBtn.style.display = "none";
         
-        // Crear el QR
-        qr = new QRCode(qrcodeContainer, {
+        // Crear el objeto QR
+        new QRCode(qrcodeContainer, {
             text: url,
             width: 200,
             height: 200,
@@ -54,24 +110,34 @@
             correctLevel : QRCode.CorrectLevel.H
         });
 
-        // Mostrar botón de descarga después de un breve delay para que se renderice el canvas
+        // Esperar un momento a que el navegador dibuje el QR para mostrar el botón de descarga
         setTimeout(() => {
-            document.getElementById("downloadBtn").style.display = "inline-block";
-        }, 300);
+            downloadBtn.style.display = "block";
+        }, 400);
     }
 
     function descargarQR() {
-        // Obtenemos la imagen generada por la librería (suele ser un <img> o un <canvas>)
-        let img = qrcodeContainer.querySelector("img");
-        let canvas = qrcodeContainer.querySelector("canvas");
+        const canvas = qrcodeContainer.querySelector("canvas");
+        const img = qrcodeContainer.querySelector("img");
+        
+        // Intentar obtener la imagen desde el canvas (desktop) o desde el img (móvil/fallback)
+        let imageSrc = "";
+        if (canvas) {
+            imageSrc = canvas.toDataURL("image/png");
+        } else if (img && img.src) {
+            imageSrc = img.src;
+        }
 
-        // Si la librería usó canvas, lo convertimos a imagen
-        let src = img ? img.src : canvas.toDataURL("image/png");
-
-        let link = document.createElement("a");
-        link.href = src;
-        link.download = "mi_codigo_qr.png";
-        link.click();
+        if (imageSrc) {
+            const link = document.createElement("a");
+            link.href = imageSrc;
+            link.download = "codigo_qr.png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert("Error al intentar descargar la imagen. Inténtalo de nuevo.");
+        }
     }
 </script>
 
